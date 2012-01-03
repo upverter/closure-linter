@@ -512,9 +512,10 @@ class ErrorFixer(errorhandler.ErrorHandler):
           else:
             f.write(original_lines[token.orig_line_number - 1])
           line = ''
-          if char_count > 80 and token.line_number in self._file_changed_lines:
-            print 'WARNING: Line %d of %s is now longer than 80 characters.' % (
-                token.line_number, self._file_name)
+          if (char_count > FLAGS.maxline and
+              token.line_number in self._file_changed_lines):
+            print 'WARNING: Line %d of %s is now longer than %d characters.' % (
+                token.line_number, self._file_name, FLAGS.maxline)
 
           char_count = 0
 
