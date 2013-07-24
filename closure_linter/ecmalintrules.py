@@ -649,7 +649,8 @@ class EcmaScriptLintRules(checkerbase.LintRulesBase):
       # Check for illegaly assigning live objects as prototype property values.
       index = identifier.find('.prototype.')
       # Ignore anything with additional .s after the prototype.
-      if index != -1 and identifier.find('.', index + 11) == -1:
+      # Ignore members that start with s_
+      if index != -1 and (identifier.find('.', index + 11) == -1 and not identifier[index + 11:].startswith('s_')):
         equal_operator = tokenutil.SearchExcept(token, Type.NON_CODE_TYPES)
         next_code = tokenutil.SearchExcept(equal_operator, Type.NON_CODE_TYPES)
         if next_code and (
