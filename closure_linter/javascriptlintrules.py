@@ -617,7 +617,7 @@ class JavaScriptLintRules(ecmalintrules.EcmaScriptLintRules):
       if var_token:
         ident_token = tokenutil.CustomSearch(
           var_token,
-          lambda t: t.type == Type.SIMPLE_LVALUE,
+          lambda t: t.type == Type.SIMPLE_LVALUE or t.type == Type.IDENTIFIER,
           end_func=lambda t: t.type == Type.SEMICOLON,
           distance=None)
         if ident_token:
@@ -633,13 +633,14 @@ class JavaScriptLintRules(ecmalintrules.EcmaScriptLintRules):
         lambda t: t.type == Type.START_BLOCK,
         end_func=lambda t: t.type == Type.END_BLOCK,
         distance=None)
-      block_counter = 1
+      scope_block_counters = [1]
 
       # check nested for loops for their variable declarations
       if block_token:
         next_token = block_token.next
-        while block_counter:
-          if next_token.IsKeyword('for'):
+        while scope_block_counters:
+          # Only check for loops in the same scope as the initial loop
+          if next_token.IsKeyword('for') and len(scope_block_counters) == 1:
             inner_var_ident = forLoopVarIdentifier(next_token)
             if inner_var_ident and inner_var_ident == var_ident:
               reused_loop_ident_msg = 'Reused loop variable %s' % (var_ident, )
@@ -647,10 +648,14 @@ class JavaScriptLintRules(ecmalintrules.EcmaScriptLintRules):
                   errors.REUSED_LOOP_VARIABLE,
                   reused_loop_ident_msg,
                   token, position=Position.AtBeginning())
+          elif next_token.type == Type.FUNCTION_DECLARATION or next_token.type == Type.FUNCTION_NAME:
+            scope_block_counters.append(0)
           elif next_token.type == Type.START_BLOCK:
-            block_counter += 1
+            scope_block_counters[-1] += 1
           elif next_token.type == Type.END_BLOCK:
-            block_counter -= 1
+            scope_block_counters[-1] -= 1
+            if scope_block_counters[-1] == 0:
+              scope_block_counters.pop()
           next_token = next_token.next
 
 

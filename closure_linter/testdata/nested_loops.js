@@ -1,4 +1,3 @@
-
 // Reuse of i
 for (var i = 0; i < 10; i++) {
   for (var i = 3; i < 5; i++) {
@@ -24,4 +23,29 @@ for (var q = 10; q < 50; q++) {
   }
 }
 
+// reuse of key
+var amap = {};
+for (var key in map) {
+  for (var key = 0; key < 10; key++) {
 
+  }
+}
+
+// No reuse, different variable names
+var bmap = {};
+for (var key in bmap) {
+  for (var i = 0; i < 10; i++) {
+
+  }
+}
+
+// No reuse error because loop is contained in a closure's scope
+for (var q = 10; q < 50; q++) {
+  for (var r = 0; r < 20; r++) {
+    var foo = function() {
+      for (var r = 7; r < 10; r++) {
+
+      }
+    };
+  }
+}
