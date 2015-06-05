@@ -60,6 +60,7 @@ _TEST_FILES = [
     'jsdoc.js',
     'limited_doc_checks.js',
     'minimal.js',
+    'nested_loops.js',
     'other.js',
     'provide_blank.js',
     'provide_extra.js',

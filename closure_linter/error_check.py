@@ -37,6 +37,7 @@ class Rule(object):
   VARIABLE_ARG_MARKER = 'variable_arg_marker'
   UNUSED_PRIVATE_MEMBERS = 'unused_private_members'
   UNUSED_LOCAL_VARIABLES = 'unused_local_variables'
+  REUSED_LOOP_VARIABLE = 'reused_loop_variable'
 
   # Rule to raise all known errors.
   ALL = 'all'
@@ -49,7 +50,8 @@ class Rule(object):
                              NO_BRACES_AROUND_INHERIT_DOC,
                              BRACES_AROUND_TYPE,
                              OPTIONAL_TYPE_MARKER,
-                             VARIABLE_ARG_MARKER])
+                             VARIABLE_ARG_MARKER,
+                             REUSED_LOOP_VARIABLE])
 
 
 flags.DEFINE_boolean('strict', False,

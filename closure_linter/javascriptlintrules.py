@@ -103,6 +103,9 @@ class JavaScriptLintRules(ecmalintrules.EcmaScriptLintRules):
     if error_check.ShouldCheck(Rule.UNUSED_LOCAL_VARIABLES):
       self._CheckUnusedLocalVariables(token, state)
 
+    if error_check.ShouldCheck(Rule.REUSED_LOOP_VARIABLE):
+      self._CheckReusedLoopVariable(token, state)
+
     if error_check.ShouldCheck(Rule.UNUSED_PRIVATE_MEMBERS):
       # Find all assignments to private members.
       if token.type == Type.SIMPLE_LVALUE:
@@ -591,6 +594,60 @@ class JavaScriptLintRules(ecmalintrules.EcmaScriptLintRules):
       if identifier in unused_local_variables:
         del unused_local_variables[identifier]
         break
+
+  def _CheckReusedLoopVariable(self, token, state):
+    """Checks for reused variables in for loops.
+
+    Args:
+      token: The token to check.
+      state: The state tracker.
+    """
+    def forLoopVarIdentifier(start_token):
+      """ returns the identifier for the var declaration, None if it is not present. """
+      var_token = tokenutil.CustomSearch(
+        start_token,
+        lambda t: t.IsKeyword('var'),
+        end_func=lambda t: t.type == Type.SEMICOLON,
+        distance=None)
+      if var_token:
+        ident_token = tokenutil.CustomSearch(
+          var_token,
+          lambda t: t.type == Type.SIMPLE_LVALUE,
+          end_func=lambda t: t.type == Type.SEMICOLON,
+          distance=None)
+        if ident_token:
+          var_ident = ident_token.string
+          return var_ident
+      return None
+
+    if token.IsKeyword('for'):
+      var_ident = forLoopVarIdentifier(token)
+
+      block_token = tokenutil.CustomSearch(
+        token,
+        lambda t: t.type == Type.START_BLOCK,
+        end_func=lambda t: t.type == Type.END_BLOCK,
+        distance=None)
+      block_counter = 1
+
+      # check nested for loops for their variable declarations
+      if block_token:
+        next_token = block_token.next
+        while block_counter:
+          if next_token.IsKeyword('for'):
+            inner_var_ident = forLoopVarIdentifier(next_token)
+            if inner_var_ident and inner_var_ident == var_ident:
+              reused_loop_ident_msg = 'Reused loop variable %s' % (var_ident, )
+              self._HandleError(
+                  errors.REUSED_LOOP_VARIABLE,
+                  reused_loop_ident_msg,
+                  token, position=Position.AtBeginning())
+          elif next_token.type == Type.START_BLOCK:
+            block_counter += 1
+          elif next_token.type == Type.END_BLOCK:
+            block_counter -= 1
+          next_token = next_token.next
+
 
   def _ReportMissingProvides(self, missing_provides, token, need_blank_line):
     """Reports missing provide statements to the error handler.
