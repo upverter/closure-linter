@@ -139,6 +139,8 @@ REMOVE_TRACE_BEFORE_SUBMIT = 1253
 REMOVE_COMMENT_BEFORE_SUBMIT = 1254
 # End of list of ActionScript specific errors.
 
+REUSED_LOOP_VARIABLE = 5000
+
 NEW_ERRORS = frozenset([
     # Errors added after 2.0.2:
     WRONG_INDENTATION,
