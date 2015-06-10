@@ -21,6 +21,7 @@ __author__ = 'robbyw@google.com (Robert Walker)'
 import gflags as flags
 from closure_linter import errors
 
+default_line_length = 80
 
 FLAGS = flags.FLAGS
 flags.DEFINE_boolean('jsdoc', True,
@@ -28,7 +29,9 @@ flags.DEFINE_boolean('jsdoc', True,
 flags.DEFINE_list('disable', None,
                   'Disable specific error. Usage Ex.: gjslint --disable 1,'
                   '0011 foo.js.')
-flags.DEFINE_integer('max_line_length', 80, 'Maximum line length allowed '
+flags.DEFINE_integer('max_line_length', default_line_length, 'Maximum line length allowed '
+                     'without warning.', lower_bound=1)
+flags.DEFINE_integer('maxline', default_line_length, 'Maximum line length allowed '
                      'without warning.', lower_bound=1)
 
 disabled_error_nums = None
@@ -40,7 +43,12 @@ def GetMaxLineLength():
   Returns:
     Length of line allowed without any warning.
   """
-  return FLAGS.max_line_length
+  if FLAGS.max_line_length != default_line_length:
+    return FLAGS.max_line_length 
+  elif FLAGS.maxline != default_line_length:
+    return FLAGS.maxline
+  else:
+    return 80
 
 
 def ShouldReportError(error):
